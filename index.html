@@ -1,247 +1,260 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>25초 숫자 게임</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #f3f4f8;
-      margin: 0;
-      padding: 20px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>25초 숫자 스피드 게임</title>
 
-    h1 {
-      margin-top: 10px;
-      margin-bottom: 18px;
-      font-size: 36px;
-    }
+<style>
+body{
+font-family:Arial;
+text-align:center;
+background:#f4f5fb;
+padding:20px;
+}
 
-    .info-box {
-      max-width: 430px;
-      margin: 0 auto 18px;
-      background: white;
-      border-radius: 16px;
-      padding: 14px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-    }
+h1{
+font-size:34px;
+margin-bottom:15px;
+}
 
-    .info {
-      font-size: 21px;
-      margin: 8px 0;
-    }
+.info{
+font-size:20px;
+margin:6px;
+}
 
-    #startButton {
-      margin-top: 12px;
-      padding: 14px 28px;
-      font-size: 22px;
-      border: none;
-      border-radius: 12px;
-      background: #2196f3;
-      color: white;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.18);
-    }
+#startButton{
+margin-top:10px;
+padding:12px 26px;
+font-size:22px;
+border:none;
+border-radius:10px;
+background:#2196f3;
+color:white;
+cursor:pointer;
+}
 
-    #startButton:disabled {
-      background: #9bbbd7;
-      cursor: not-allowed;
-    }
+#gameBoard{
+max-width:420px;
+margin:20px auto;
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:10px;
+}
 
-    #gameBoard {
-      max-width: 430px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-    }
+.num-btn{
+height:60px;
+font-size:22px;
+border:none;
+border-radius:10px;
+background:white;
+box-shadow:0 2px 6px rgba(0,0,0,0.2);
+cursor:pointer;
+}
 
-    .num-btn {
-      height: 62px;
-      font-size: 22px;
-      border: none;
-      border-radius: 12px;
-      background: white;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      cursor: pointer;
-    }
+.num-btn:disabled{
+background:#c8e6c9;
+color:#2e7d32;
+}
 
-    .num-btn:disabled {
-      background: #c8e6c9;
-      color: #2e7d32;
-      cursor: default;
-    }
+#message{
+font-size:24px;
+margin-top:15px;
+font-weight:bold;
+}
 
-    #message {
-      margin-top: 24px;
-      min-height: 40px;
-      font-size: 26px;
-      font-weight: bold;
-    }
-
-    .guide {
-      max-width: 430px;
-      margin: 18px auto 0;
-      background: white;
-      border-radius: 16px;
-      padding: 14px;
-      font-size: 16px;
-      line-height: 1.7;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-      text-align: left;
-    }
-  </style>
+</style>
 </head>
+
 <body>
 
-  <h1>25초 숫자 게임</h1>
+<h1>25초 숫자 스피드 게임</h1>
 
-  <div class="info-box">
-    <div class="info">남은 시간: <span id="time">25</span>초</div>
-    <div class="info">다음 숫자: <span id="target">1</span></div>
-    <div class="info">현재 기록: <span id="currentRecord">0</span>개</div>
-    <div class="info">최고 기록: <span id="bestRecord">0</span>개</div>
-    <button id="startButton">게임 시작</button>
-  </div>
+<div class="info">남은 시간 : <span id="time">25</span></div>
+<div class="info">다음 숫자 : <span id="target">1</span></div>
+<div class="info">최고 기록 : <span id="bestTime">없음</span></div>
 
-  <div id="gameBoard"></div>
+<button id="startButton">게임 시작</button>
 
-  <div id="message"></div>
+<div id="gameBoard"></div>
 
-  <div class="guide">
-    <strong>게임 방법</strong><br>
-    화면에 섞여 있는 1~30 숫자를 순서대로 누르세요.<br>
-    25초 안에 많이 맞출수록 기록이 올라갑니다.<br>
-    최고 기록은 이 기기 브라우저에 저장됩니다.
-  </div>
+<div id="message"></div>
 
-  <script>
-    const timeEl = document.getElementById("time");
-    const targetEl = document.getElementById("target");
-    const currentRecordEl = document.getElementById("currentRecord");
-    const bestRecordEl = document.getElementById("bestRecord");
-    const startButton = document.getElementById("startButton");
-    const gameBoard = document.getElementById("gameBoard");
-    const messageEl = document.getElementById("message");
+<script>
 
-    let currentNumber = 1;
-    let timeLeft = 25;
-    let timer = null;
-    let gameRunning = false;
-    let currentRecord = 0;
+const timeEl=document.getElementById("time")
+const targetEl=document.getElementById("target")
+const bestTimeEl=document.getElementById("bestTime")
+const startButton=document.getElementById("startButton")
+const board=document.getElementById("gameBoard")
+const message=document.getElementById("message")
 
-    const BEST_RECORD_KEY = "number_game_best_record";
+let current=1
+let timeLeft=25
+let timer=null
+let startTime=0
 
-    function loadBestRecord() {
-      const saved = localStorage.getItem(BEST_RECORD_KEY);
-      return saved ? Number(saved) : 0;
-    }
+const BEST_KEY="number_speed_best"
 
-    function saveBestRecord(record) {
-      localStorage.setItem(BEST_RECORD_KEY, record);
-    }
+function loadBest(){
 
-    function updateBestRecordUI() {
-      bestRecordEl.textContent = loadBestRecord();
-    }
+let t=localStorage.getItem(BEST_KEY)
 
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
+if(t){
+bestTimeEl.textContent=t+"초"
+}else{
+bestTimeEl.textContent="없음"
+}
 
-    function createBoard() {
-      gameBoard.innerHTML = "";
+}
 
-      const numbers = [];
-      for (let i = 1; i <= 30; i++) {
-        numbers.push(i);
-      }
+function saveBest(time){
 
-      shuffle(numbers);
+localStorage.setItem(BEST_KEY,time)
 
-      numbers.forEach((num) => {
-        const button = document.createElement("button");
-        button.className = "num-btn";
-        button.textContent = num;
+}
 
-        button.addEventListener("click", () => {
-          if (!gameRunning) return;
+function shuffle(arr){
 
-          if (num === currentNumber) {
-            button.disabled = true;
-            currentNumber++;
-            currentRecord++;
-            currentRecordEl.textContent = currentRecord;
-            targetEl.textContent = currentNumber <= 30 ? currentNumber : "완료";
+for(let i=arr.length-1;i>0;i--){
 
-            if (currentRecord > loadBestRecord()) {
-              saveBestRecord(currentRecord);
-              updateBestRecordUI();
-            }
+let j=Math.floor(Math.random()*(i+1))
 
-            if (currentNumber > 30) {
-              endGame(true);
-            }
-          }
-        });
+[arr[i],arr[j]]=[arr[j],arr[i]]
 
-        gameBoard.appendChild(button);
-      });
-    }
+}
 
-    function startGame() {
-      if (timer) {
-        clearInterval(timer);
-      }
+return arr
 
-      currentNumber = 1;
-      timeLeft = 25;
-      currentRecord = 0;
-      gameRunning = true;
+}
 
-      timeEl.textContent = timeLeft;
-      targetEl.textContent = currentNumber;
-      currentRecordEl.textContent = currentRecord;
-      messageEl.textContent = "";
-      startButton.disabled = true;
+function createBoard(){
 
-      createBoard();
+board.innerHTML=""
 
-      timer = setInterval(() => {
-        timeLeft--;
-        timeEl.textContent = timeLeft;
+let numbers=[]
 
-        if (timeLeft <= 0) {
-          endGame(false);
-        }
-      }, 1000);
-    }
+for(let i=1;i<=30;i++){
 
-    function endGame(success) {
-      clearInterval(timer);
-      timer = null;
-      gameRunning = false;
-      startButton.disabled = false;
+numbers.push(i)
 
-      const best = loadBestRecord();
+}
 
-      if (success) {
-        messageEl.textContent = `성공! 30개 모두 맞췄어요! 최고 기록: ${best}개`;
-      } else {
-        messageEl.textContent = `시간 종료! 이번 기록: ${currentRecord}개 / 최고 기록: ${best}개`;
-      }
-    }
+shuffle(numbers)
 
-    startButton.addEventListener("click", startGame);
+numbers.forEach(num=>{
 
-    updateBestRecordUI();
-  </script>
+let btn=document.createElement("button")
+
+btn.className="num-btn"
+
+btn.textContent=num
+
+btn.onclick=()=>clickNumber(num,btn)
+
+board.appendChild(btn)
+
+})
+
+}
+
+function clickNumber(num,btn){
+
+if(num===current){
+
+btn.disabled=true
+
+current++
+
+targetEl.textContent=current
+
+if(current>30){
+
+successGame()
+
+}
+
+}
+
+}
+
+function startGame(){
+
+clearInterval(timer)
+
+current=1
+timeLeft=25
+
+timeEl.textContent=timeLeft
+targetEl.textContent=current
+
+message.textContent=""
+
+startButton.disabled=true
+
+createBoard()
+
+startTime=Date.now()
+
+timer=setInterval(()=>{
+
+timeLeft--
+
+timeEl.textContent=timeLeft
+
+if(timeLeft<=0){
+
+failGame()
+
+}
+
+},1000)
+
+}
+
+function successGame(){
+
+clearInterval(timer)
+
+let endTime=Date.now()
+
+let clearTime=((endTime-startTime)/1000).toFixed(2)
+
+let best=localStorage.getItem(BEST_KEY)
+
+if(!best || clearTime<best){
+
+saveBest(clearTime)
+
+loadBest()
+
+message.textContent="새 최고기록! "+clearTime+"초"
+
+}else{
+
+message.textContent="성공! 기록 "+clearTime+"초"
+
+}
+
+startButton.disabled=false
+
+}
+
+function failGame(){
+
+clearInterval(timer)
+
+message.textContent="시간 종료!"
+
+startButton.disabled=false
+
+}
+
+startButton.onclick=startGame
+
+loadBest()
+
+</script>
 
 </body>
 </html>
