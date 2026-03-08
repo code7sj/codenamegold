@@ -6,6 +6,7 @@
 <title>25초 숫자 스피드 게임</title>
 
 <style>
+
 body{
 font-family:Arial;
 text-align:center;
@@ -14,27 +15,26 @@ padding:20px;
 }
 
 h1{
-font-size:34px;
-margin-bottom:15px;
+font-size:32px;
+margin-bottom:20px;
 }
 
 .info{
 font-size:20px;
-margin:6px;
+margin:8px;
 }
 
 #startButton{
-margin-top:10px;
-padding:12px 26px;
-font-size:22px;
+margin-top:15px;
+padding:14px 28px;
+font-size:20px;
 border:none;
 border-radius:10px;
-background:#2196f3;
+background:#3498db;
 color:white;
-cursor:pointer;
 }
 
-#gameBoard{
+#board{
 max-width:420px;
 margin:20px auto;
 display:grid;
@@ -42,25 +42,17 @@ grid-template-columns:repeat(5,1fr);
 gap:10px;
 }
 
-.num-btn{
+.num{
 height:60px;
 font-size:22px;
 border:none;
-border-radius:10px;
+border-radius:8px;
 background:white;
 box-shadow:0 2px 6px rgba(0,0,0,0.2);
-cursor:pointer;
 }
 
-.num-btn:disabled{
+.num:disabled{
 background:#c8e6c9;
-color:#2e7d32;
-}
-
-#message{
-font-size:24px;
-margin-top:15px;
-font-weight:bold;
 }
 
 </style>
@@ -72,60 +64,30 @@ font-weight:bold;
 
 <div class="info">남은 시간 : <span id="time">25</span></div>
 <div class="info">다음 숫자 : <span id="target">1</span></div>
-<div class="info">최고 기록 : <span id="bestTime">없음</span></div>
+<div class="info">최고 기록 : <span id="best">없음</span></div>
 
 <button id="startButton">게임 시작</button>
 
-<div id="gameBoard"></div>
-
-<div id="message"></div>
+<div id="board"></div>
 
 <script>
 
-const timeEl=document.getElementById("time")
-const targetEl=document.getElementById("target")
-const bestTimeEl=document.getElementById("bestTime")
-const startButton=document.getElementById("startButton")
-const board=document.getElementById("gameBoard")
-const message=document.getElementById("message")
-
 let current=1
-let timeLeft=25
+let time=25
 let timer=null
 let startTime=0
 
-const BEST_KEY="number_speed_best"
-
-function loadBest(){
-
-let t=localStorage.getItem(BEST_KEY)
-
-if(t){
-bestTimeEl.textContent=t+"초"
-}else{
-bestTimeEl.textContent="없음"
-}
-
-}
-
-function saveBest(time){
-
-localStorage.setItem(BEST_KEY,time)
-
-}
+const timeEl=document.getElementById("time")
+const targetEl=document.getElementById("target")
+const board=document.getElementById("board")
+const startButton=document.getElementById("startButton")
+const bestEl=document.getElementById("best")
 
 function shuffle(arr){
-
 for(let i=arr.length-1;i>0;i--){
-
 let j=Math.floor(Math.random()*(i+1))
-
 [arr[i],arr[j]]=[arr[j],arr[i]]
-
 }
-
-return arr
-
 }
 
 function createBoard(){
@@ -133,24 +95,45 @@ function createBoard(){
 board.innerHTML=""
 
 let numbers=[]
-
 for(let i=1;i<=30;i++){
-
 numbers.push(i)
-
 }
 
 shuffle(numbers)
 
-numbers.forEach(num=>{
-
+numbers.forEach(n=>{
 let btn=document.createElement("button")
+btn.className="num"
+btn.textContent=n
 
-btn.className="num-btn"
+btn.onclick=function(){
 
-btn.textContent=num
+if(n===current){
 
-btn.onclick=()=>clickNumber(num,btn)
+btn.disabled=true
+current++
+targetEl.textContent=current
+
+if(current>30){
+clearInterval(timer)
+
+let clear=(Date.now()-startTime)/1000
+
+let best=localStorage.getItem("best")
+
+if(!best||clear<best){
+localStorage.setItem("best",clear)
+bestEl.textContent=clear.toFixed(2)+"초"
+alert("새 기록 "+clear.toFixed(2)+"초")
+}else{
+alert("성공 "+clear.toFixed(2)+"초")
+}
+
+}
+
+}
+
+}
 
 board.appendChild(btn)
 
@@ -158,101 +141,38 @@ board.appendChild(btn)
 
 }
 
-function clickNumber(num,btn){
-
-if(num===current){
-
-btn.disabled=true
-
-current++
-
-targetEl.textContent=current
-
-if(current>30){
-
-successGame()
-
-}
-
-}
-
-}
-
-function startGame(){
-
-clearInterval(timer)
+startButton.onclick=function(){
 
 current=1
-timeLeft=25
+time=25
 
-timeEl.textContent=timeLeft
 targetEl.textContent=current
-
-message.textContent=""
-
-startButton.disabled=true
+timeEl.textContent=time
 
 createBoard()
 
 startTime=Date.now()
 
-timer=setInterval(()=>{
+clearInterval(timer)
 
-timeLeft--
+timer=setInterval(function(){
 
-timeEl.textContent=timeLeft
+time--
+timeEl.textContent=time
 
-if(timeLeft<=0){
-
-failGame()
-
+if(time<=0){
+clearInterval(timer)
+alert("시간 종료")
 }
 
 },1000)
 
 }
 
-function successGame(){
-
-clearInterval(timer)
-
-let endTime=Date.now()
-
-let clearTime=((endTime-startTime)/1000).toFixed(2)
-
-let best=localStorage.getItem(BEST_KEY)
-
-if(!best || clearTime<best){
-
-saveBest(clearTime)
-
-loadBest()
-
-message.textContent="새 최고기록! "+clearTime+"초"
-
-}else{
-
-message.textContent="성공! 기록 "+clearTime+"초"
-
+let best=localStorage.getItem("best")
+if(best){
+bestEl.textContent=parseFloat(best).toFixed(2)+"초"
 }
-
-startButton.disabled=false
-
-}
-
-function failGame(){
-
-clearInterval(timer)
-
-message.textContent="시간 종료!"
-
-startButton.disabled=false
-
-}
-
-startButton.onclick=startGame
-
-loadBest()
 
 </script>
 
