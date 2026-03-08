@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>숫자 순서 게임</title>
+
+<style>
+
+body{
+font-family:Arial;
+text-align:center;
+background:#f4f7fb;
+}
+
+h1{
+font-size:40px;
+}
+
+#board{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:10px;
+max-width:400px;
+margin:auto;
+}
+
+button{
+height:60px;
+font-size:22px;
+border:none;
+border-radius:10px;
+background:white;
+box-shadow:0 2px 5px rgba(0,0,0,0.2);
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>10초 숫자 게임</h1>
+
+<p>남은 시간: <span id="time">10</span></p>
+<p>다음 숫자: <span id="target">1</span></p>
+
+<button onclick="startGame()">게임 시작</button>
+
+<div id="board"></div>
+
+<h2 id="msg"></h2>
+
+<script>
+
+let current=1
+let time=10
+let timer
+
+function shuffle(a){
+for(let i=a.length-1;i>0;i--){
+let j=Math.floor(Math.random()*(i+1))
+[a[i],a[j]]=[a[j],a[i]]
+}
+}
+
+function createBoard(){
+
+let board=document.getElementById("board")
+board.innerHTML=""
+
+let arr=[]
+
+for(let i=1;i<=30;i++){
+arr.push(i)
+}
+
+shuffle(arr)
+
+arr.forEach(n=>{
+let b=document.createElement("button")
+b.innerText=n
+
+b.onclick=function(){
+
+if(n==current){
+
+b.style.background="#8bc34a"
+
+current++
+document.getElementById("target").innerText=current
+
+if(current>30){
+clearInterval(timer)
+document.getElementById("msg").innerText="성공!"
+}
+
+}
+
+}
+
+board.appendChild(b)
+
+})
+
+}
+
+function startGame(){
+
+current=1
+time=10
+
+document.getElementById("msg").innerText=""
+document.getElementById("target").innerText=1
+
+createBoard()
+
+timer=setInterval(()=>{
+
+time--
+document.getElementById("time").innerText=time
+
+if(time==0){
+clearInterval(timer)
+document.getElementById("msg").innerText="시간 종료"
+}
+
+},1000)
+
+}
+
+createBoard()
+
+</script>
+
+</body>
+</html>
